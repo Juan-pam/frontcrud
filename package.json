@@ -29,5 +29,11 @@
   "devDependencies": {
     "@types/react": "^18.0.0"
   },
-  "expo.doctor.reactNativeDirectoryCHeck.listUnknownPackages": false
+  "expo": {
+  "doctor": {
+    "reactNativeDirectoryCheck": {
+      "listUnknownPackages": false
+    }
+  }
+}
 }
