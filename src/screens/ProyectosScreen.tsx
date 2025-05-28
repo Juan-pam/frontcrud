@@ -55,6 +55,7 @@ const ProyectosScreen: React.FC = () => {
   }, []);
 
   const eliminarProyecto = async (id: string) => {
+    //alert(id)
     Alert.alert("Confirmar", "¿Deseas eliminar este proyecto?", [
       { text: "Cancelar", style: "cancel" },
       {

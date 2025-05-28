@@ -16,7 +16,7 @@ import Toast from 'react-native-root-toast';
 const FormScreen: React.FC = () => {
   const [proyecto, setProyecto] = useState({
     nombreProyecto: "",
-    ubicacion: { provincia: "", distrito: "" },
+    ubicacion: { ubicacionProvincia: "", ubicacionDistrito: "" },
     presupuesto: "",
     beneficiariosDirectos: "",
     plazoEjecucion: "",
@@ -33,8 +33,8 @@ const FormScreen: React.FC = () => {
     const nuevosErrores: { [key: string]: string } = {};
 
     if (!proyecto.nombreProyecto) nuevosErrores.nombreProyecto = "Nombre del proyecto requerido";
-    if (!proyecto.ubicacion.provincia) nuevosErrores.provincia = "Provincia requerida";
-    if (!proyecto.ubicacion.distrito) nuevosErrores.distrito = "Distrito requerido";
+    if (!proyecto.ubicacion.ubicacionProvincia) nuevosErrores.provincia = "Provincia requerida";
+    if (!proyecto.ubicacion.ubicacionDistrito) nuevosErrores.distrito = "Distrito requerido";
     if (!proyecto.presupuesto) nuevosErrores.presupuesto = "Presupuesto requerido";
     if (!proyecto.plazoEjecucion) nuevosErrores.plazoEjecucion = "Fecha de plazo requerida";
     if (!proyecto.entidadEjecutora) nuevosErrores.entidadEjecutora = "Entidad ejecutora requerida";
@@ -54,13 +54,14 @@ const FormScreen: React.FC = () => {
         beneficiariosDirectos: Number(proyecto.beneficiariosDirectos),
         plazoEjecucion: new Date(proyecto.plazoEjecucion).toISOString()
       };
+      console.log("🚀 ~ handleSubmit ~ nuevoProyecto:", nuevoProyecto)
 
       await apiPost("/crear", nuevoProyecto);
       Alert.alert("Éxito", "Proyecto registrado exitosamente");
       
       setProyecto({
         nombreProyecto: "",
-        ubicacion: { provincia: "", distrito: "" },
+        ubicacion: { ubicacionProvincia: "", ubicacionDistrito: "" },
         presupuesto: "",
         beneficiariosDirectos: "",
         plazoEjecucion: "",
@@ -97,16 +98,16 @@ const FormScreen: React.FC = () => {
         <TextInput
           style={[styles.input, errores.provincia && styles.inputError]}
           placeholder="Provincia"
-          value={proyecto.ubicacion.provincia}
-          onChangeText={text => setProyecto({...proyecto, ubicacion: {...proyecto.ubicacion, provincia: text}})}
+          value={proyecto.ubicacion.ubicacionProvincia}
+          onChangeText={text => setProyecto({...proyecto, ubicacion: {...proyecto.ubicacion, ubicacionProvincia: text}})}
         />
         {errores.provincia && <Text style={styles.error}>{errores.provincia}</Text>}
 
         <TextInput
           style={[styles.input, errores.distrito && styles.inputError]}
           placeholder="Distrito"
-          value={proyecto.ubicacion.distrito}
-          onChangeText={text => setProyecto({...proyecto, ubicacion: {...proyecto.ubicacion, distrito: text}})}
+          value={proyecto.ubicacion.ubicacionDistrito}
+          onChangeText={text => setProyecto({...proyecto, ubicacion: {...proyecto.ubicacion, ubicacionDistrito: text}})}
         />
         {errores.distrito && <Text style={styles.error}>{errores.distrito}</Text>}
 
