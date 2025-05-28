@@ -1,25 +1,19 @@
 import React from 'react';
 import AppNavigator from './src/navigation/AppNavigator';
-import { AuthProvider } from './src/Context/AuthContext';
+import { AuthProvider } from './src/context/AuthContext';
 import { NavigationContainer } from '@react-navigation/native';
-import { SafeAreaView, StyleSheet } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 const App = () => {
   return (
-    <SafeAreaView style={styles.container}>
-      <AuthProvider>
+    <AuthProvider>
+      <SafeAreaProvider>
         <NavigationContainer>
           <AppNavigator />
         </NavigationContainer>
-      </AuthProvider>
-    </SafeAreaView>
+      </SafeAreaProvider>
+    </AuthProvider>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-});
 
 export default App;
