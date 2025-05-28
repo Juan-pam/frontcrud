@@ -1,31 +1,40 @@
 {
-    "expo": {
-      "name": "MyApp",
-      "newArchEnabled":true,
-      "slug": "myapp",
-      "version": "1.0.0",
-      "orientation": "portrait",
-      "icon": "./src/assets/icon.png",
-      "splash": {
-        "image": "./src/assets/splash.png",
-        "resizeMode": "contain",
-        "backgroundColor": "#ffffff"
+  "expo": {
+    "name": "MyApp",
+    "newArchEnabled": true,
+    "slug": "projects-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./src/assets/icon.png",
+    "splash": {
+      "image": "./src/assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "updates": {
+      "fallbackToCacheTimeout": 0
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./src/assets/adaptive-icon.png",
+        "backgroundColor": "#FFFFFF"
       },
-      "updates": {
-        "fallbackToCacheTimeout": 0
-      },
-      "assetBundlePatterns": ["**/*"],
-      "ios": {
-        "supportsTablet": true
-      },
-      "android": {
-        "adaptiveIcon": {
-          "foregroundImage": "./src/assets/adaptive-icon.png",
-          "backgroundColor": "#FFFFFF"
-        }
-      },
-      "web": {
-        "favicon": "./src/assets/favicon.png"
+      "package": "com.rampmail29.projectsapp"
+    },
+    "web": {
+      "favicon": "./src/assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "70fe09ff-a741-4683-85e9-77ecc105a589"
       }
-    }
+    },
+    "owner": "rampmail29"
   }
+}
