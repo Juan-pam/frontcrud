@@ -1,27 +1,77 @@
-import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Image, TextInput } from "react-native";
-import { StackNavigationProp } from "@react-navigation/stack";
-import { useAuth } from "Context/AuthContext";
-import { RootStackParamList } from "../navigation/AppNavigator";
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  Button,
+  StyleSheet,
+  Alert,
+  ActivityIndicator,
+  Image
+} from "react-native";
+import { Picker } from "@react-native-picker/picker"; // Importación añadida
+import { apiPost } from "../services/api";
+import Toast from 'react-native-root-toast';
 
-type HomeScreenNavigationProp = StackNavigationProp<RootStackParamList, "Home">;
+const FormScreen: React.FC = () => {
+  const [proyecto, setProyecto] = useState({
+    nombreProyecto: "",
+    ubicacion: { provincia: "", distrito: "" },
+    presupuesto: "",
+    beneficiariosDirectos: "",
+    plazoEjecucion: "",
+    entidadEjecutora: "",
+    estado: "planificación"
+  });
+  
+  const [loading, setLoading] = useState(false);
+  const [errores, setErrores] = useState<{ [key: string]: string }>({});
 
-type Props = {
-  navigation: HomeScreenNavigationProp;
-};
+  const estados = ["planificación", "en ejecución", "finalizado", "suspendido"];
 
-const HomeScreen: React.FC<Props> = ({ navigation }) => {
-  const { user, signIn, signOut } = useAuth();
-  const [username, setUsername] = React.useState("");
-  const [password, setPassword] = React.useState("");
-  const [error, setError] = React.useState("");
+  const handleSubmit = async () => {
+    const nuevosErrores: { [key: string]: string } = {};
 
-  const handleLogin = () => {
-    setError(""); // Resetear error
-    if (username.trim() === "admin" && password === "123456789") {
-      signIn(username.trim());
-    } else {
-      setError("Credenciales incorrectas");
+    if (!proyecto.nombreProyecto) nuevosErrores.nombreProyecto = "Nombre del proyecto requerido";
+    if (!proyecto.ubicacion.provincia) nuevosErrores.provincia = "Provincia requerida";
+    if (!proyecto.ubicacion.distrito) nuevosErrores.distrito = "Distrito requerido";
+    if (!proyecto.presupuesto) nuevosErrores.presupuesto = "Presupuesto requerido";
+    if (!proyecto.plazoEjecucion) nuevosErrores.plazoEjecucion = "Fecha de plazo requerida";
+    if (!proyecto.entidadEjecutora) nuevosErrores.entidadEjecutora = "Entidad ejecutora requerida";
+
+    if (Object.keys(nuevosErrores).length > 0) {
+      setErrores(nuevosErrores);
+      return;
+    }
+
+    setErrores({});
+    setLoading(true);
+
+    try {
+      const nuevoProyecto = {
+        ...proyecto,
+        presupuesto: Number(proyecto.presupuesto),
+        beneficiariosDirectos: Number(proyecto.beneficiariosDirectos),
+        plazoEjecucion: new Date(proyecto.plazoEjecucion).toISOString()
+      };
+
+      await apiPost("/crear", nuevoProyecto);
+      Alert.alert("Éxito", "Proyecto registrado exitosamente");
+      
+      setProyecto({
+        nombreProyecto: "",
+        ubicacion: { provincia: "", distrito: "" },
+        presupuesto: "",
+        beneficiariosDirectos: "",
+        plazoEjecucion: "",
+        entidadEjecutora: "",
+        estado: "planificación"
+      });
+
+    } catch (error) {
+      Alert.alert("Error", "No se pudo registrar el proyecto");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -32,71 +82,91 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
         style={styles.backgroundImage}
         resizeMode="cover"
       />
-      {user ? (
-        <View style={styles.authContainer}>
-          <Text style={styles.welcomeText}>Gestión de proyectos</Text>
-          <Text style={styles.userText}>{user}</Text>
-          
-          <View style={styles.section}>
-            <Text style={styles.sectionText}>         Un gran proyecto comienza con </Text>
-            <Text style={styles.sectionText}>                   una pequeña acción</Text>
-          </View>
+      
+      <View style={styles.formContainer}>
+        <Text style={styles.title}>Formulario de Proyecto</Text>
 
-          <View style={styles.buttonGroup}>
-            <TouchableOpacity
-              style={[styles.button, styles.logoutButton]}
-              onPress={signOut}
-            >
-              <Text style={styles.buttonText}>Cerrar sesión</Text>
-            </TouchableOpacity>
+        <TextInput
+          style={[styles.input, errores.nombreProyecto && styles.inputError]}
+          placeholder="Nombre del proyecto"
+          value={proyecto.nombreProyecto}
+          onChangeText={text => setProyecto({...proyecto, nombreProyecto: text})}
+        />
+        {errores.nombreProyecto && <Text style={styles.error}>{errores.nombreProyecto}</Text>}
 
-            <TouchableOpacity
-              style={styles.button}
-              onPress={() => navigation.navigate("Form")}
-            >
-              <Text style={styles.buttonText}>Agregar proyecto</Text>
-            </TouchableOpacity>
+        <TextInput
+          style={[styles.input, errores.provincia && styles.inputError]}
+          placeholder="Provincia"
+          value={proyecto.ubicacion.provincia}
+          onChangeText={text => setProyecto({...proyecto, ubicacion: {...proyecto.ubicacion, provincia: text}})}
+        />
+        {errores.provincia && <Text style={styles.error}>{errores.provincia}</Text>}
 
-            <TouchableOpacity
-              style={styles.button}
-              onPress={() => navigation.navigate("Proyectos")}
-            >
-              <Text style={styles.buttonText}>Ver Todos los proyectos</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      ) : (
-        <View style={styles.loginContainer}>
-          <Text style={styles.loginTitle}>Inicio de sesión</Text>
-          
-          <TextInput
-            style={styles.input}
-            placeholder="Usuario"
-            value={username}
-            onChangeText={setUsername}
-            autoCapitalize="none"
-            placeholderTextColor="#666"
-          />
-          
-          <TextInput
-            style={styles.input}
-            placeholder="Contraseña"
-            secureTextEntry
-            value={password}
-            onChangeText={setPassword}
-            placeholderTextColor="#666"
-          />
+        <TextInput
+          style={[styles.input, errores.distrito && styles.inputError]}
+          placeholder="Distrito"
+          value={proyecto.ubicacion.distrito}
+          onChangeText={text => setProyecto({...proyecto, ubicacion: {...proyecto.ubicacion, distrito: text}})}
+        />
+        {errores.distrito && <Text style={styles.error}>{errores.distrito}</Text>}
 
-          {error ? <Text style={styles.errorText}>{error}</Text> : null}
+        <TextInput
+          style={[styles.input, errores.presupuesto && styles.inputError]}
+          placeholder="Presupuesto"
+          keyboardType="numeric"
+          value={proyecto.presupuesto}
+          onChangeText={text => setProyecto({...proyecto, presupuesto: text})}
+        />
+        {errores.presupuesto && <Text style={styles.error}>{errores.presupuesto}</Text>}
 
-          <TouchableOpacity
-            style={styles.loginButton}
-            onPress={handleLogin}
+        <TextInput
+          style={styles.input}
+          placeholder="Beneficiarios directos"
+          keyboardType="numeric"
+          value={proyecto.beneficiariosDirectos}
+          onChangeText={text => setProyecto({...proyecto, beneficiariosDirectos: text})}
+        />
+
+        <TextInput
+          style={[styles.input, errores.plazoEjecucion && styles.inputError]}
+          placeholder="Plazo de ejecución (YYYY-MM-DD)"
+          value={proyecto.plazoEjecucion}
+          onChangeText={text => setProyecto({...proyecto, plazoEjecucion: text})}
+        />
+        {errores.plazoEjecucion && <Text style={styles.error}>{errores.plazoEjecucion}</Text>}
+
+        <TextInput
+          style={[styles.input, errores.entidadEjecutora && styles.inputError]}
+          placeholder="Entidad ejecutora"
+          value={proyecto.entidadEjecutora}
+          onChangeText={text => setProyecto({...proyecto, entidadEjecutora: text})}
+        />
+        {errores.entidadEjecutora && <Text style={styles.error}>{errores.entidadEjecutora}</Text>}
+
+        <Text style={styles.label}>Estado del Proyecto</Text>
+        <View style={styles.pickerWrapper}>
+          <Picker
+            selectedValue={proyecto.estado}
+            onValueChange={(itemValue: string) => setProyecto({...proyecto, estado: itemValue})}
           >
-            <Text style={styles.loginButtonText}>INICIAR SESIÓN</Text>
-          </TouchableOpacity>
+            {estados.map(estado => (
+              <Picker.Item 
+                key={estado} 
+                label={estado.toUpperCase()} 
+                value={estado} 
+              />
+            ))}
+          </Picker>
         </View>
-      )}
+
+        {loading ? (
+          <ActivityIndicator size="large" color="#007bff" style={{ marginTop: 20 }} />
+        ) : (
+          <Text style={styles.button} onPress={handleSubmit}>
+            Guardar Proyecto
+          </Text>
+        )}
+      </View>
     </View>
   );
 };
@@ -116,99 +186,54 @@ const styles = StyleSheet.create({
     height: '100%',
     zIndex: -1,
   },
-  authContainer: {
-    flex: 1,
+  formContainer: {
     padding: 20,
-    marginTop: 40,
-  },
-  welcomeText: {
-    fontSize: 24,
-    fontWeight: "700",
-    color: "#2c3e50",
-    marginBottom: 5,
-    textAlign: "center",
-  },
-  userText: {
-    fontSize: 18,
-    color: "#3498db",
-    marginBottom: 20,
-    textAlign: "center",
-  },
-  section: {
-    marginBottom: 30,
-    padding: 15,
-    backgroundColor: "#ffffff",
-    borderRadius: 10,
+    marginTop: 50,
+    backgroundColor: 'rgba(255, 255, 255, 0.85)',
+    borderRadius: 15,
+    marginHorizontal: 20,
     elevation: 3,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
   },
-  sectionText: {
-    fontSize: 16,
-    color: "#34495e",
-    marginVertical: 5,
-  },
-  buttonGroup: {
-    marginHorizontal: 15,
-  },
-  button: {
-    backgroundColor: "#1e1c91",
-    padding: 15,
-    borderRadius: 25,
-    marginVertical: 10,
-    alignItems: "center",
-  },
-  logoutButton: {
-    backgroundColor: "#e74c3c",
-  },
-  buttonText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  loginContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 20,
-  },
-  loginTitle: {
-    fontSize: 24,
-    fontWeight: "700",
-    color: "#2c3e50",
-    marginBottom: 30,
+  title: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 20,
   },
   input: {
-    width: "80%",
-    backgroundColor: "#fff",
-    padding: 15,
-    marginBottom: 15,
-    borderRadius: 8,
+    borderColor: "#aaa",
     borderWidth: 1,
-    borderColor: "#ddd",
-    fontSize: 16,
+    padding: 10,
+    marginBottom: 5,
+    borderRadius: 5,
   },
-  errorText: {
-    color: "#e74c3c",
-    marginBottom: 15,
-    fontSize: 14,
-    fontWeight: "500",
+  inputError: {
+    borderColor: "red",
   },
-  loginButton: {
-    width: "80%",
-    backgroundColor: "#2ecc71",
-    padding: 15,
-    borderRadius: 25,
-    alignItems: "center",
-    marginTop: 10,
+  error: {
+    color: "red",
+    marginBottom: 10,
+    fontSize: 12,
   },
-  loginButtonText: {
+  pickerWrapper: {
+    borderColor: "#aaa",
+    borderWidth: 1,
+    borderRadius: 5,
+    marginBottom: 5,
+    paddingHorizontal: 10,
+  },
+  label: {
+    marginBottom: 5,
+    fontWeight: "bold",
+  },
+  button: {
+    backgroundColor: "#3498db",
     color: "white",
-    fontSize: 16,
-    fontWeight: "700",
+    padding: 15,
+    borderRadius: 5,
+    textAlign: "center",
+    marginTop: 20,
+    fontWeight: "bold",
   },
 });
 
-export default HomeScreen;
+export default FormScreen;

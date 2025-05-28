@@ -1,38 +1,93 @@
-import React, { createContext, useState, useContext, ReactNode } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+/* import React, { createContext, useState, useContext, ReactNode } from "react";
 
+// Tipado de los datos que tendrá el contexto
 interface AuthContextData {
   user: string | null;
-  signIn: (username: string) => Promise<void>;
-  signOut: () => Promise<void>;
-  isLoading: boolean;
+  signIn: (username: string) => void;
+  signOut: () => void;
 }
 
-const AuthContext = createContext<AuthContextData>({} as AuthContextData);
+// Creoo el contexto
+export const AuthContext = createContext<AuthContextData | undefined>(
+  undefined
+);
 
+// Tipado de las propiedades del proveedor
 interface AuthProviderProps {
   children: ReactNode;
 }
 
-export const AuthProvider = ({ children }: AuthProviderProps) => {
+// Componente proveedor que encapsula toda la app, es decir el authprovoider
+// que envuelve a toda la app y le da acceso al contexto a todos los componentes hijos
+export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false); // Ya no usamos carga desde almacenamiento
 
-  const signIn = async (username: string) => {
-    await AsyncStorage.setItem('user', username); // Puedes comentar esta línea si no quieres guardar
-    setUser(username);
+  const signIn = (username: string) => {
+    setUser(username); // Simula el inicio de sesión
   };
 
-  const signOut = async () => {
-    await AsyncStorage.removeItem('user');
-    setUser(null);
+  const signOut = () => {
+    setUser(null); // Simula el cierre de sesión
   };
 
   return (
-    <AuthContext.Provider value={{ user, signIn, signOut, isLoading }}>
+    <AuthContext.Provider value={{ user, signIn, signOut }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-export const useAuth = () => useContext(AuthContext);
+// Hook personalizado para consumir el contexto más fácil
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error("useAuth debe ser usado dentro de un AuthProvider");
+  }
+  return context;
+};
+
+ */
+import React, { createContext, useState, useContext, ReactNode } from 'react';
+
+// Tipado de los datos que tendrá el contexto
+interface AuthContextData {
+  user: string | null;
+  signIn: (username: string) => void;
+  signOut: () => void;
+}
+
+// Creamos el contexto
+const AuthContext = createContext<AuthContextData | undefined>(undefined);
+
+// Tipado de las propiedades del proveedor
+interface AuthProviderProps {
+  children: ReactNode;
+}
+
+// Componente proveedor que encapsula toda la app
+export const AuthProvider = ({ children }: AuthProviderProps) => {
+  const [user, setUser] = useState<string | null>(null);
+
+  const signIn = (username: string) => {
+    setUser(username);
+  };
+
+  const signOut = () => {
+    setUser(null);
+  };
+
+  return (
+    <AuthContext.Provider value={{ user, signIn, signOut }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+// Hook personalizado para consumir el contexto
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth debe ser usado dentro de un AuthProvider');
+  }
+  return context;
+};
