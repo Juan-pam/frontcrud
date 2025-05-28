@@ -1,4 +1,1 @@
-/node_modules
-/.env
-/.expo
-.package-lock.json
+.env
